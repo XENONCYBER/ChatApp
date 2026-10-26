@@ -1,0 +1,1478 @@
+/* ============================================================
+   Chattie — design system
+   Reference: claude.ai's warm, paper-like dark theme.
+   Type pairing: Newsreader (serif display, stands in for Claude's
+   Copernicus) + Hanken Grotesk (UI) + JetBrains Mono (code).
+   ============================================================ */
+
+:root {
+  /* --- Surfaces -------------------------------------------------------
+     Claude's dark theme is warm and low-contrast: near-black with a brown
+     cast rather than the blue-grey most dark UIs default to. */
+  --bg-primary: #262624;
+  --bg-secondary: #1f1e1d;
+  --bg-elevated: #30302e;
+  --bg-inset: #1a1917;
+  --bg-hover: rgba(255, 255, 255, 0.055);
+  --bg-active: rgba(255, 255, 255, 0.09);
+
+  /* --- Borders (hairlines, never heavy) --- */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.11);
+  --border-strong: rgba(255, 255, 255, 0.17);
+
+  /* --- Brand / accents --- */
+  --clay: #c96442;
+  /* Claude's terracotta */
+  --clay-hover: #d97757;
+  --clay-soft: rgba(201, 100, 66, 0.13);
+  --clay-line: rgba(201, 100, 66, 0.32);
+
+  --accent-claude: #c96442;
+  --accent-chatgpt: #10a37f;
+  --accent-gemini: #4285f4;
+
+  /* --- Destructive actions (kept quiet, no loud red) --- */
+  --danger: #d08770;
+  --danger-soft: rgba(208, 135, 112, 0.12);
+
+  /* --- Text: warm off-white, never pure #fff --- */
+  --text-primary: #f5f4ef;
+  --text-secondary: #b7b5ad;
+  --text-muted: #8a8780;
+  --text-faint: #6b6862;
+
+  --code-bg: #1a1917;
+
+  --font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --font-ui: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* Soft, diffuse shadows – Claude avoids hard drop shadows. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.4);
+
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur: 160ms;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* Smooth-scroll the document and every inner scroll container. Only
+   programmatic/keyboard/scrollbar scrolls animate; mouse-wheel pixels stay
+   instant, so this never introduces lag. */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* NOTE: `text-rendering: optimizeLegibility` is expensive to re-evaluate on
+     every paint. On a long thread (~150k px) it made scrolling visibly
+     jittery, so it is scoped to the few display headings below instead of
+     being applied to all body text. */
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--clay-soft);
+  color: var(--text-primary);
+}
+
+/* Consistent, unobtrusive focus ring. */
+:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- App Layout ---------- */
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  height: 100%;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  /* The resizer is absolutely positioned; without an explicit containing
+     block it anchored to <body> and stretched a full-height strip over the
+     main view, swallowing scrollbar clicks. */
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 14px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+/* Simple clay square mark rather than a gradient blob. */
+.brand-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--clay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.brand-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Search ---------- */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 7px 10px 7px 31px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.search-input::placeholder {
+  color: var(--text-faint);
+}
+
+.search-input:hover {
+  background: var(--bg-hover);
+}
+
+.search-input:focus {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+  outline: none;
+}
+
+/* ---------- Filter pills ----------
+   Understated text-first tabs; the active one gets a solid surface rather
+   than a saturated fill, which is how Claude handles segmented controls. */
+.filter-pills {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: var(--radius);
+}
+
+.filter-pill {
+  flex: 1;
+  padding: 5px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.filter-pill:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.filter-pill.active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Chat list ---------- */
+.chat-list-label {
+  padding: 4px 8px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Extra right padding keeps this list's scrollbar clear of the 5px
+     resize handle pinned to the sidebar's right edge. */
+  padding: 2px 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-height: 0;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+.chat-item {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 6px 6px 10px;
+  border-radius: var(--radius);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.chat-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.chat-item.active {
+  background-color: var(--bg-active);
+}
+
+.chat-item-select {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  text-align: left;
+  font: inherit;
+  background: transparent;
+  border: none;
+  padding: 2px 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+.chat-item-menu-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease), background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.chat-item:hover .chat-item-menu-btn,
+.chat-item.active .chat-item-menu-btn,
+.chat-item-menu-btn:focus-visible {
+  opacity: 1;
+}
+
+.chat-item-menu-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ---------- Rename input (replaces the row while editing) ---------- */
+.rename-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  outline: none;
+}
+
+.rename-input:focus {
+  border-color: var(--clay);
+}
+
+/* ---------- Chat item popover menu ---------- */
+.chat-item-menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 152px;
+  padding: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  animation: menu-pop var(--dur) var(--ease);
+}
+
+@keyframes menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.menu-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.menu-item.danger {
+  color: var(--danger);
+}
+
+.menu-item.danger:hover {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+}
+
+.chat-item-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 450;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--dur) var(--ease);
+}
+
+.chat-item:hover .chat-item-title,
+.chat-item.active .chat-item-title {
+  color: var(--text-primary);
+}
+
+.chat-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+/* Site indicated by a small dot instead of a loud badge. */
+.site-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-faint);
+}
+
+.site-dot.claude {
+  background: var(--accent-claude);
+}
+
+.site-dot.chatgpt {
+  background: var(--accent-chatgpt);
+}
+
+.site-dot.gemini {
+  background: var(--accent-gemini);
+}
+
+.chat-item-site {
+  text-transform: capitalize;
+}
+
+.chat-item-meta .dot-sep {
+  color: var(--border-strong);
+}
+
+.no-chats {
+  padding: 28px 14px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---------- Icon buttons ----------
+   Quiet by default, surface appears on hover. */
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.icon-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.icon-btn:active {
+  background-color: var(--bg-active);
+}
+
+/* ---------- Resizer ---------- */
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  /* Sits fully INSIDE the sidebar so it never covers the main view's
+     scrollbar (the previous cause of dead scrolling). */
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+  background-color: transparent;
+  touch-action: none;
+  outline: none;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: transparent;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.sidebar-resizer:hover::after,
+.sidebar-resizer:focus-visible::after,
+.sidebar.resizing .sidebar-resizer::after {
+  background: var(--clay);
+}
+
+.sidebar-resizer:focus-visible {
+  outline: none;
+}
+
+/* No width transition mid-drag, so it tracks the cursor 1:1. */
+.sidebar.resizing {
+  transition: none;
+}
+
+/* ---------- Collapsed sidebar ---------- */
+.sidebar.collapsed {
+  width: 52px !important;
+  align-items: center;
+  padding: 14px 0;
+  gap: 6px;
+}
+
+/* ============================================================
+   MAIN VIEW
+   ============================================================ */
+.main-view {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  /* Lets this flex child shrink; without it, widening the sidebar pushed
+     the message area off-screen. */
+  min-width: 0;
+}
+
+.empty-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  width: 30px;
+  height: 30px;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+
+.empty-view p {
+  font-size: 14px;
+  max-width: 40ch;
+  text-align: center;
+  line-height: 1.65;
+}
+
+.empty-view code {
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+/* ---------- Header ---------- */
+.view-header {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.view-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Serif title — the main nod to Claude's editorial feel. */
+.view-header-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.011em;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-rendering: optimizeLegibility;
+}
+
+.view-header-details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.view-header-details .dot-sep {
+  color: var(--border-strong);
+}
+
+.view-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ---------- Buttons ----------
+   Two tiers only: one quiet default and one clay primary. No gradients. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.btn-primary {
+  background: var(--clay);
+  color: #fff;
+  border-color: var(--clay);
+}
+
+.btn-primary:hover {
+  background: var(--clay-hover);
+  border-color: var(--clay-hover);
+}
+
+.btn-primary:active {
+  background: var(--clay);
+}
+
+/* ---------- Main View Layouts ---------- */
+.messages-layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  position: relative;
+}
+
+/* ---------- Message thread ---------- */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* min-height:0 lets this flex child shrink so overflow-y actually
+     produces a scrollbar. */
+  min-height: 0;
+  padding: 28px 24px 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+.message-block {
+  width: 100%;
+  /* Wide measure – the viewer is a reading surface, not a narrow column,
+     so the available space is actually used. */
+  max-width: 70rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.message-header svg {
+  width: 12px;
+  height: 12px;
+}
+
+.message-block.user .message-header {
+  color: var(--clay);
+}
+
+/* User turn: soft inset card, mirroring Claude's own user bubbles. */
+.message-block.user .message-body {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  padding: 13px 16px;
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 16.5px;
+  line-height: 1.65;
+}
+
+/* Assistant turn: flat text, no container. */
+.message-block.assistant .message-body {
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.72;
+}
+
+/* ============================================================
+   MARKDOWN CONTENT
+   ============================================================ */
+.message-body {
+  min-width: 0;
+  /* `word-break: break-word` is a legacy alias for `overflow-wrap: anywhere`;
+     it lets the browser break between ANY two characters, so italic/fake-bold
+     runs of Unicode math letters (e.g. 𝑅, 𝑆) that land in a fallback font
+     each became a line-break point. `overflow-wrap: break-word` alone only
+     breaks inside a word that would otherwise overflow. */
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.message-body>*:first-child {
+  margin-top: 0;
+}
+
+.message-body>*:last-child {
+  margin-bottom: 0;
+}
+
+.message-body p {
+  margin-bottom: 0.9em;
+}
+
+.message-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Serif headings inside responses keep the editorial voice consistent. */
+.message-body h1,
+.message-body h2,
+.message-body h3,
+.message-body h4,
+.message-body h5,
+.message-body h6 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--text-primary);
+  margin: 1.5em 0 0.5em;
+  line-height: 1.28;
+  text-rendering: optimizeLegibility;
+}
+
+.message-body h1 {
+  font-size: 1.5em;
+}
+
+.message-body h2 {
+  font-size: 1.32em;
+}
+
+.message-body h3 {
+  font-size: 1.16em;
+}
+
+.message-body h4 {
+  font-size: 1.04em;
+}
+
+.message-body h5,
+.message-body h6 {
+  font-size: 1em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+.message-body ul,
+.message-body ol {
+  margin: 0.6em 0 1em;
+  padding-left: 1.4em;
+}
+
+.message-body li {
+  margin-bottom: 0.35em;
+}
+
+.message-body li::marker {
+  color: var(--text-faint);
+}
+
+.message-body li>p {
+  margin-bottom: 0.4em;
+}
+
+/* Nested lists shouldn't inherit the outer vertical rhythm. */
+.message-body li>ul,
+.message-body li>ol {
+  margin: 0.35em 0;
+}
+
+.message-body li input[type='checkbox'] {
+  margin-right: 7px;
+  accent-color: var(--clay);
+}
+
+.message-body hr {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 1.6em 0;
+}
+
+.message-body a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--clay-line);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2.5px;
+  transition: text-decoration-color var(--dur) var(--ease);
+}
+
+.message-body a:hover {
+  text-decoration-color: var(--clay);
+}
+
+.message-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-subtle);
+}
+
+.message-body blockquote {
+  border-left: 2px solid var(--clay-line);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: var(--text-secondary);
+}
+
+.message-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.message-body strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ---------- Tables ----------
+   Wrapped by MessageBubble so wide tables scroll instead of stretching the
+   column and pushing the layout sideways. */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 1.15em 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+  background: var(--bg-secondary);
+}
+
+.table-wrapper:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 1px;
+}
+
+.table-wrapper>table {
+  margin: 0;
+  border: none;
+  min-width: 100%;
+}
+
+.message-body table {
+  /* `auto` (not 100% + fixed) lets cells size to content; the wrapper
+     handles overflow, so multi-column tables stay readable. */
+  width: auto;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  line-height: 1.55;
+  word-break: normal;
+  /* break-word (not anywhere): a cell still wraps long content, but the
+     browser won't insert a break after every character/font-run the way
+     `anywhere` does. */
+  overflow-wrap: break-word;
+}
+
+.message-body th,
+.message-body td {
+  border: 1px solid var(--border-subtle);
+  padding: 8px 13px;
+  text-align: left;
+  vertical-align: top;
+  max-width: 26rem;
+}
+
+.message-body th {
+  background-color: var(--bg-inset);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* Drop the doubled outer border inside the rounded wrapper. */
+.table-wrapper>table tr>*:first-child {
+  border-left: none;
+}
+
+.table-wrapper>table tr>*:last-child {
+  border-right: none;
+}
+
+.table-wrapper>table tr:first-child>* {
+  border-top: none;
+}
+
+.table-wrapper>table tr:last-child>* {
+  border-bottom: none;
+}
+
+.message-body tbody tr:last-child>* {
+  border-bottom: none;
+}
+
+.message-body tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.message-body td code,
+.message-body th code {
+  white-space: nowrap;
+}
+
+/* ---------- Code ---------- */
+.message-body :not(pre)>code {
+  font-family: var(--font-code);
+  font-size: 0.855em;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  padding: 1.5px 5px;
+  border-radius: 4px;
+  color: #e8a87c;
+  overflow-wrap: break-word;
+}
+
+.message-body pre {
+  margin: 1.15em 0;
+  background: var(--code-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.022);
+  padding: 6px 8px 6px 13px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.copy-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.copy-btn.copied {
+  color: #7ec699;
+}
+
+.message-body pre code {
+  display: block;
+  padding: 13px;
+  background: transparent;
+  border: none;
+  color: #e3ded6;
+  overflow-x: auto;
+  font-family: var(--font-code);
+  font-size: 13.5px;
+  line-height: 1.62;
+  white-space: pre;
+}
+
+/* ---------- Continue-chat action ----------
+   Lives in the view header (not a floating pill) so it is always visible
+   without overlapping content. */
+.continue-chat-btn svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.85;
+}
+
+/* ---------- Error banner ---------- */
+.error-banner {
+  margin: 12px 24px 0;
+  padding: 10px 14px;
+  background: rgba(201, 100, 66, 0.09);
+  border: 1px solid var(--clay-line);
+  border-radius: var(--radius);
+  color: #e8b09a;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.error-banner code {
+  font-family: var(--font-code);
+  background: rgba(0, 0, 0, 0.28);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* ---------- Scrollbars ---------- */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.13);
+  /* Transparent border + padding-box clip renders a slim thumb while
+     keeping a comfortably large hit area for grabbing it. */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.26);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+/* ---------- Bookmark Feature ---------- */
+
+/* Floating tooltip that appears on text selection */
+.bookmark-tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  z-index: 200;
+  animation: bookmark-tooltip-in 0.15s ease-out;
+}
+
+@keyframes bookmark-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+.bookmark-tooltip-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.bookmark-tooltip-btn:hover {
+  background: var(--bg-active);
+}
+
+/* Bookmark button in header */
+.bookmark-header-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bookmark-header-btn.has-bookmarks {
+  color: var(--clay);
+}
+
+.bookmark-count {
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--clay-soft);
+  color: var(--clay);
+}
+
+/* Bookmark panel dropdown */
+.bookmark-panel {
+  position: absolute;
+  top: 64px;
+  right: 16px;
+  width: 340px;
+  max-height: 400px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  z-index: 150;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: bookmark-panel-in 0.15s ease-out;
+}
+
+@keyframes bookmark-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bookmark-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.bookmark-panel-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bookmark-panel-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s ease;
+}
+
+.bookmark-item:last-child {
+  border-bottom: none;
+}
+
+.bookmark-item:hover {
+  background: var(--bg-hover);
+}
+
+.bookmark-item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+}
+
+.bookmark-item-snippet {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-style: italic;
+}
+
+.bookmark-item-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.bookmark-remove-btn {
+  flex-shrink: 0;
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+.bookmark-remove-btn:hover {
+  opacity: 1;
+  color: var(--danger);
+}
+
+/* Flash animation when scrolling to a bookmarked message */
+@keyframes bookmark-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(201, 100, 66, 0.4);
+  }
+
+  30% {
+    box-shadow: 0 0 0 4px rgba(201, 100, 66, 0.3);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 100, 66, 0);
+  }
+}
+
+.bookmark-flash {
+  animation: bookmark-flash 1.5s ease-out;
+  border-radius: var(--radius-md);
+}
+
+/* ---------- Bookmarks visually highlighted ---------- */
+.bookmarked-text {
+  background-color: rgba(201, 100, 66, 0.25);
+  border-bottom: 2px solid rgba(201, 100, 66, 0.8);
+  color: inherit;
+  border-radius: 2px;
+}
+
+/* ---------- ChatGPT-Style Minimap Navigation ---------- */
+.chat-minimap-container {
+  position: absolute;
+  right: 12px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  z-index: 50;
+}
+
+.chat-minimap-track {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  padding: 40px 0;
+  width: 24px;
+}
+
+.minimap-bar {
+  width: 16px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.minimap-bar:hover,
+.minimap-bar.active {
+  background: rgba(201, 100, 66, 0.8);
+  width: 20px;
+}
+
+.minimap-list-box {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: max-content;
+  max-width: 380px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 60;
+  animation: minimap-list-in 0.15s ease-out;
+}
+
+@keyframes minimap-list-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.minimap-list-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #ececec;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s ease;
+}
+
+.minimap-list-item:hover,
+.minimap-list-item.highlighted {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .messages-container {
+    padding: 20px 16px 80px;
+  }
+
+  .view-header {
+    padding: 10px 16px;
+  }
+
+  .bookmark-panel {
+    width: calc(100vw - 32px);
+    right: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
